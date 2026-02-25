@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TENKAI ONE PIECE - Store Ultime V5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --bg-deep: #030712;
+            --bg-teal: #083344;
+            --cyan-neon: #00E5FF;
+            --red-neon: #ff4757;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --gradient-metal: linear-gradient(180deg, #FFFFFF 30%, #A0AAB2 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND DYNAMIQUE --- */
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: linear-gradient(to bottom, rgba(8, 51, 68, 0.6) 0%, rgba(3, 7, 18, 0.95) 100%);
+            background-size: cover; background-position: center; background-attachment: fixed;
+            z-index: -1; transition: background-image 0.8s ease-in-out;
+        }
+        .ambient-bg::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05) 0%, transparent 60%);
+            animation: pulseBg 10s infinite alternate; pointer-events: none;
+        }
+        @keyframes pulseBg { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.2); opacity: 1; } }
+
+        /* --- NAVIGATION "FLOATING ISLAND" --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem 2rem; 
+            margin: 2rem auto 3rem; /* Fait flotter la barre */
+            width: 95%; max-width: 1200px;
+            background: rgba(10, 15, 25, 0.65);
+            backdrop-filter: blur(24px); 
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px; /* Bords très arrondis (Pilule) */
+            position: sticky; top: 2rem; z-index: 1000;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        /* LOGO IMAGE */
+        .logo-nav { cursor: pointer; display: flex; align-items: center; }
+        .nav-logo-img {
+            height: 45px; /* Ajuste la taille de ton logo ici */
+            width: auto;
+            filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.3)); /* Lueur sous le logo */
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .nav-logo-img:hover { transform: scale(1.05); }
+
+        .nav-links { display: flex; gap: 0.5rem; }
+        
+        /* ONGLETS BOUTONS */
+        .nav-item {
+            color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            padding: 0.8rem 1.5rem; border-radius: 16px; border: 1px solid transparent;
+        }
+        .nav-item:hover {
+            color: #FFF; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);
+        }
+        /* Style de l'onglet actif */
+        .nav-item.active {
+            color: var(--cyan-neon); 
+            background: rgba(0, 229, 255, 0.1); 
+            border-color: rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15) inset;
+        }
+
+        /* --- SPA SYSTEM --- */
+        main { flex: 1; position: relative; padding: 0 2rem 4rem; }
+        .page { display: none; max-width: 1400px; margin: 0 auto; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); scale: 0.99; } to { opacity: 1; transform: translateY(0); scale: 1; } }
+
+        /* --- HEADER DE PAGE --- */
+        .page-header { position: relative; margin-bottom: 5rem; text-align: center; }
+        .bg-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 10rem; font-weight: 900; color: transparent;
+            -webkit-text-stroke: 2px rgba(255,255,255,0.03);
+            white-space: nowrap; z-index: -1; pointer-events: none; user-select: none;
+        }
+        .page-header h1 { font-size: 4rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; background: var(--gradient-metal); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .page-header p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 1rem auto 0; }
+        
+        .btn-back {
+            display: inline-block; margin-bottom: 1.5rem; color: var(--text-muted); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s;
+            background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-back:hover { color: var(--cyan-neon); border-color: var(--cyan-neon); background: rgba(0,229,255,0.1); transform: translateX(-5px); }
+
+        /* --- LE COEUR : CARTES BENTO --- */
+        .bento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 3rem; }
+        .card-wrapper { perspective: 1500px; z-index: 1; }
+
+        .store-card {
+            position: relative; width: 100%; height: 340px; 
+            background: linear-gradient(145deg, rgba(20, 30, 45, 0.8) 0%, rgba(5, 10, 20, 0.95) 100%);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            backdrop-filter: blur(15px); transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease;
+            cursor: pointer; overflow: visible; padding: 0; 
+        }
+
+        /* IMAGE 2.5D */
+        .card-image {
+            position: absolute; right: -5%; bottom: 25%; height: 105%; width: 80%; 
+            object-fit: contain; object-position: bottom right; z-index: 5; 
+            filter: drop-shadow(-5px 5px 10px rgba(0,0,0,0.5));
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s ease;
+            pointer-events: none;
+        }
+
+        /* BOUCLIER DE TEXTE (HUD) */
+        .card-content { 
+            position: relative; z-index: 10; width: 100%; 
+            padding: 3rem 1.5rem 1.5rem; 
+            background: linear-gradient(to top, rgba(5, 10, 20, 1) 40%, rgba(5, 10, 20, 0.8) 75%, transparent 100%);
+            border-radius: 0 0 24px 24px; transform: translateZ(30px); 
+        }
+
+        .store-card h2 { 
+            font-size: 1.8rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.2rem; 
+            background: var(--gradient-metal); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .store-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.4; font-weight: 600;}
+        
+        .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+
+        .price-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan-neon);
+            color: var(--cyan-neon); padding: 0.6rem 1rem; border-radius: 12px; font-weight: 900;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.1) inset; white-space: nowrap; flex-shrink: 0;
+        }
+
+        .btn-action {
+            background: transparent; color: #FFF; border: 1px solid rgba(255,255,255,0.3); 
+            padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; text-transform: uppercase; 
+            flex-grow: 1; text-align: center; transition: 0.3s; cursor: pointer; backdrop-filter: blur(5px);
+        }
+
+        /* SURVOL : 3D */
+        .card-wrapper:hover .store-card { transform: translateY(-10px) rotateX(5deg) rotateY(-3deg); border-color: rgba(0, 229, 255, 0.4); }
+        .store-card::after {
+            content: ''; position: absolute; inset: 0; border-radius: 24px;
+            background: var(--cyan-neon); filter: blur(40px); opacity: 0; z-index: -1;
+            transform: translateZ(-50px); transition: opacity 0.4s ease;
+        }
+        .card-wrapper:hover .store-card::after { opacity: 0.15; }
+        .card-wrapper:hover .card-image { transform: scale(1.08) translateY(-15px) translateZ(10px); filter: drop-shadow(-15px 20px 25px rgba(0,0,0,0.7)) drop-shadow(0 0 10px var(--cyan-neon)); }
+        .card-wrapper:hover .btn-action { background: var(--cyan-neon); border-color: var(--cyan-neon); box-shadow: 0 0 25px rgba(0, 229, 255, 0.4); color: #000; }
+
+        /* BUNDLES */
+        .bundle-best .store-card { border-color: rgba(0, 229, 255, 0.4); box-shadow: 0 0 20px rgba(0, 229, 255, 0.1); }
+        .bundle-best .price-badge { background: var(--cyan-neon); color: #000; box-shadow: 0 0 15px var(--cyan-neon); }
+
+        /* GRADES SPÉCIFIQUES */
+        .grade-roi .store-card { background: linear-gradient(145deg, rgba(60, 10, 10, 0.9) 0%, rgba(20, 5, 5, 0.95) 100%); border-color: rgba(255, 71, 87, 0.3); }
+        .grade-roi .card-content { background: linear-gradient(to top, rgba(20, 5, 5, 1) 40%, rgba(20, 5, 5, 0.8) 75%, transparent 100%); }
+        .grade-roi .price-badge { border-color: var(--red-neon); color: var(--red-neon); background: rgba(255, 71, 87, 0.05); box-shadow: 0 0 15px rgba(255, 71, 87, 0.1) inset; }
+        .grade-roi .store-card::after { background: var(--red-neon); }
+        .card-wrapper:hover .grade-roi .store-card { border-color: var(--red-neon); }
+        .card-wrapper:hover .grade-roi .card-image { filter: drop-shadow(0 0 10px var(--red-neon)); }
+        .card-wrapper:hover .grade-roi .btn-action { background: var(--red-neon); border-color: var(--red-neon); box-shadow: 0 0 25px rgba(255, 71, 87, 0.4); color: #FFF; }
+
+        /* Responsive Nav */
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 1rem; border-radius: 16px; padding: 1rem; }
+            .nav-links { flex-wrap: wrap; justify-content: center; }
+            .nav-item { padding: 0.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg" id="dynamic-bg"></div>
+
+    <nav>
+        <div class="logo-nav" onclick="switchPage('index', 1, 'index')">
+            <img src="tenkailogo.png" alt="TENKAI" class="nav-logo-img" onerror="this.src='https://via.placeholder.com/150x45/00E5FF/000000?text=TENKAI+LOGO'">
+        </div>
+        <div class="nav-links">
+            <div class="nav-item active" id="nav-index" onclick="switchPage('index', 1, 'index')">Accueil</div>
+            <div class="nav-item" id="nav-reroll" onclick="switchPage('reroll', 2, 'reroll')">Rerolls</div>
+            <div class="nav-item" id="nav-reset" onclick="switchPage('reset', 2, 'reset')">Resets</div>
+            <div class="nav-item" id="nav-grade" onclick="switchPage('grade', 2, 'grade')">Grades VIP</div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="index" class="page active">
+            <div class="page-header">
+                <div class="bg-text">GRAND LINE</div>
+                <h1>Boutique Officielle</h1>
+                <p>La puissance s'achète, le respect se gagne. Choisis ton destin.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper" onclick="switchPage('reroll', 2, 'reroll')">
+                    <div class="store-card">
+                        <img src="dé_reroll.png" alt="Reroll" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'">
+                        <div class="card-content">
+                            <h2>Rerolls</h2>
+                            <p>Dials, Haki, Clans. Défie le hasard.</p>
+                            <div class="card-footer"><button class="btn-action">Découvrir</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper" onclick="switchPage('reset', 2, 'reset')">
+                    <div class="store-card">
+                         <img src="reset.png" alt="Reset" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'">
+                        <div class="card-content">
+                            <h2>Resets</h2>
+                            <p>Nouveau fruit, nouvelle vie.</p>
+                            <div class="card-footer"><button class="btn-action">Découvrir</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper grade-roi" onclick="switchPage('grade', 2, 'grade')">
+                    <div class="store-card">
+                         <img src="grade.png" alt="Grade" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/591c1c/ff4757?text=GRADE.PNG'">
+                        <div class="card-content">
+                            <h2 style="color: #ff4757;">VIP</h2>
+                            <p>Deviens une légende de Tenkai.</p>
+                            <div class="card-footer"><button class="btn-action">Découvrir</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reroll" class="page">
+            <div class="page-header">
+                <div class="bg-text">DESTINY</div>
+                <h1>SPOILS & REROLLS</h1>
+                <p>Choisis l'attribut que tu souhaites relancer.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper" onclick="switchPage('haki-detail', 3, 'reroll')">
+                    <div class="store-card">
+                        <img src="dé_reroll.png" alt="Reroll Haki" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'">
+                        <div class="card-content">
+                            <h2>Reroll Haki</h2>
+                            <p>Change la couleur et l'affinité de ton fluide.</p>
+                            <div class="card-footer"><button class="btn-action">Voir les offres</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper" onclick="switchPage('clan-detail', 3, 'reroll')">
+                    <div class="store-card">
+                        <img src="dé_reroll.png" alt="Reroll Clan" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'">
+                        <div class="card-content">
+                            <h2>Reroll Clan</h2>
+                            <p>Modifie ta lignée. Deviens un héritier du D.</p>
+                            <div class="card-footer"><button class="btn-action">Voir les offres</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper" onclick="switchPage('dial-detail', 3, 'reroll')">
+                    <div class="store-card">
+                        <img src="dé_reroll.png" alt="Reroll Dial" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'">
+                        <div class="card-content">
+                            <h2>Reroll Dial</h2>
+                            <p>Tire un puissant Dial aléatoire.</p>
+                            <div class="card-footer"><button class="btn-action">Voir les offres</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reset" class="page">
+            <div class="page-header">
+                <div class="bg-text">REBIRTH</div>
+                <h1>RÉSURRECTION</h1>
+                <p>Que souhaites-tu réinitialiser ?</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper" onclick="switchPage('classe-detail', 3, 'reset')">
+                    <div class="store-card">
+                        <img src="reset.png" alt="Reset Classe" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'">
+                        <div class="card-content">
+                            <h2>Reset Classe</h2>
+                            <p>Change de voie de combat.</p>
+                            <div class="card-footer"><button class="btn-action">Voir les offres</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper" onclick="switchPage('race-detail', 3, 'reset')">
+                    <div class="store-card">
+                        <img src="reset.png" alt="Reset Race" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'">
+                        <div class="card-content">
+                            <h2>Reset Race</h2>
+                            <p>Change d'espèce sans perdre ton stuff.</p>
+                            <div class="card-footer"><button class="btn-action">Voir les offres</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="grade" class="page">
+            <div class="page-header">
+                <div class="bg-text">EMPIRE</div>
+                <h1>L'ÉLITE DE TENKAI</h1>
+                <p>Atteins le sommet de la chaîne alimentaire.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper">
+                    <div class="store-card">
+                        <img src="grade.png" alt="Grade Corsaire" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/192332/00E5FF?text=GRADE.PNG'">
+                        <div class="card-content">
+                            <h2>Corsaire</h2>
+                            <p>File x2, Salaire +25%, Tag in-game.</p>
+                            <div class="card-footer">
+                                <div class="price-badge">10.00 €</div><button class="btn-action">S'abonner</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper grade-roi">
+                    <div class="store-card">
+                        <img src="grade.png" alt="Grade Roi" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/591c1c/ff4757?text=GRADE.PNG'">
+                        <div class="card-content">
+                            <h2 style="color: #ff4757;">Roi des Pirates</h2>
+                            <p>Bypass, Salaire +100%, Aura VIP.</p>
+                            <div class="card-footer">
+                                <div class="price-badge">50.00 €</div><button class="btn-action">Devenir Roi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper">
+                    <div class="store-card">
+                        <img src="grade.png" alt="Grade Empereur" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/192332/00E5FF?text=GRADE.PNG'">
+                        <div class="card-content">
+                            <h2>Empereur</h2>
+                            <p>File x4, Salaire +50%, Pseudo couleur.</p>
+                            <div class="card-footer">
+                                <div class="price-badge">25.00 €</div><button class="btn-action">S'abonner</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="haki-detail" class="page">
+            <div class="page-header">
+                <span class="btn-back" onclick="switchPage('reroll', 2, 'reroll')">« Retour aux Rerolls</span>
+                <div class="bg-text">HAKI</div>
+                <h1>Reroll Haki</h1>
+                <p>Économise en achetant des packs. Chaque ticket te permet de relancer ton Haki IG.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>1x Reroll</h2><p>Tente ta chance une seule fois.</p><div class="card-footer"><div class="price-badge">5.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>3x Rerolls</h2><p>Trois chances de trouver la perfection.</p><div class="card-footer"><div class="price-badge">12.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper bundle-best"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>5x Rerolls</h2><p>Le choix des Empereurs. Meilleure valeur.</p><div class="card-footer"><div class="price-badge">20.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+            </div>
+        </section>
+
+        <section id="clan-detail" class="page">
+            <div class="page-header">
+                <span class="btn-back" onclick="switchPage('reroll', 2, 'reroll')">« Retour aux Rerolls</span>
+                <div class="bg-text">BLOOD</div>
+                <h1>Reroll Clan</h1>
+                <p>Modifie ton destin génétique.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>1x Reroll</h2><p>Une nouvelle lignée.</p><div class="card-footer"><div class="price-badge">8.50 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>3x Rerolls</h2><p>Le pack sécurisé.</p><div class="card-footer"><div class="price-badge">20.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper bundle-best"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>5x Rerolls</h2><p>Deviens un D. à coup sûr (ou presque).</p><div class="card-footer"><div class="price-badge">35.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+            </div>
+        </section>
+        
+        <section id="dial-detail" class="page">
+            <div class="page-header">
+                <span class="btn-back" onclick="switchPage('reroll', 2, 'reroll')">« Retour aux Rerolls</span>
+                <div class="bg-text">SKYPIEA</div>
+                <h1>Reroll Dial</h1>
+                <p>Fais le plein de technologie céleste.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>1x Dial</h2><p>Un dial aléatoire.</p><div class="card-footer"><div class="price-badge">3.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>3x Dials</h2><p>Pack Arsenal.</p><div class="card-footer"><div class="price-badge">7.50 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper bundle-best"><div class="store-card"><img src="dé_reroll.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/083344/00E5FF?text=DÉ+REROLL'"><div class="card-content"><h2>5x Dials</h2><p>Pack Inventeur Céleste.</p><div class="card-footer"><div class="price-badge">12.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+            </div>
+        </section>
+
+        <section id="classe-detail" class="page">
+            <div class="page-header">
+                <span class="btn-back" onclick="switchPage('reset', 2, 'reset')">« Retour aux Resets</span>
+                <div class="bg-text">COMBAT</div>
+                <h1>Reset Classe</h1>
+                <p>Change de style de combat.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper"><div class="store-card"><img src="reset.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'"><div class="card-content"><h2>Reset Simple</h2><p>Changement de voie basique.</p><div class="card-footer"><div class="price-badge">10.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper bundle-best"><div class="store-card"><img src="reset.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'"><div class="card-content"><h2>Reset Premium</h2><p>Conserve 50% de tes stats.</p><div class="card-footer"><div class="price-badge">18.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+            </div>
+        </section>
+
+        <section id="race-detail" class="page">
+            <div class="page-header">
+                <span class="btn-back" onclick="switchPage('reset', 2, 'reset')">« Retour aux Resets</span>
+                <div class="bg-text">SPECIES</div>
+                <h1>Reset Race</h1>
+                <p>Nouveau corps, nouvelles capacités.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="card-wrapper"><div class="store-card"><img src="reset.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'"><div class="card-content"><h2>1x Reset Race</h2><p>Tirage aléatoire de race.</p><div class="card-footer"><div class="price-badge">15.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+                <div class="card-wrapper bundle-best"><div class="store-card"><img src="reset.png" class="card-image" onerror="this.src='https://via.placeholder.com/350x400/3b1b4d/9b59b6?text=RESET.PNG'"><div class="card-content"><h2>Pack 3x Race</h2><p>Plus de chances d'avoir un Lunaria.</p><div class="card-footer"><div class="price-badge">35.00 €</div><button class="btn-action">Acheter</button></div></div></div></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function switchPage(pageId, bgLevel, parentNavId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.getElementById('nav-' + parentNavId).classList.add('active');
+
+            const bgContainer = document.getElementById('dynamic-bg');
+            const overlay = "linear-gradient(to bottom, rgba(8, 51, 68, 0.7) 0%, rgba(3, 7, 18, 0.95) 100%), ";
+            
+            if (bgLevel === 1) {
+                bgContainer.style.backgroundImage = overlay + "url('bc1.png')";
+            } else if (bgLevel === 2) {
+                bgContainer.style.backgroundImage = overlay + "url('bc2.png')";
+            } else if (bgLevel === 3) {
+                bgContainer.style.backgroundImage = overlay + "url('bc3.png')";
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = () => {
+            switchPage('index', 1, 'index');
+        };
+    </script>
+</body>
+</html>
