@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion'; // <-- Import de motion ajouté ici
+
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
 import HistoryDrawer from './components/HistoryDrawer';
 import Footer from './components/Footer';
+import PaymentOverlay from './components/PaymentOverlay';
+
 import Home from './pages/Home';
 import Category from './pages/Category';
 import SubCategory from './pages/SubCategory';
@@ -11,24 +15,44 @@ import Grades from './pages/Grades';
 import { storeData } from './data/store';
 import { useStore } from './context/StoreContext';
 
+// Les réglages de ton animation (Optimisée, fluide et snappée)
+const pageVariants = {
+  initial: { 
+    opacity: 0, 
+    y: 15 // Mouvement beaucoup plus subtil (15px au lieu de 50px)
+  },
+  animate: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.3, // Plus de deux fois plus rapide
+      ease: "easeOut" // Fini le rebond, la page arrive de manière nette et glissante
+    } 
+  },
+  exit: { 
+    opacity: 0, 
+    y: -15, 
+    transition: { 
+      duration: 0.2, 
+      ease: "easeIn" 
+    } 
+  }
+};
+
 export default function App() {
   const location = useLocation();
-  const { showLoginError, setShowLoginError } = useStore(); // Récupère juste la modale d'erreur
+  const { showLoginError, setShowLoginError } = useStore();
 
-  // --- Gestion du fond d'écran dynamique ---
   useEffect(() => {
     const bgContainer = document.getElementById('dynamic-bg');
     if (!bgContainer) return;
     
     const overlay = "linear-gradient(to bottom, rgba(8, 51, 68, 0.7) 0%, rgba(3, 7, 18, 0.95) 100%), ";
     
-    if (location.pathname === '/') {
-      bgContainer.style.backgroundImage = `${overlay}url('/bc1.png')`;
-    } else if (location.pathname.startsWith('/product/')) {
-      bgContainer.style.backgroundImage = `${overlay}url('/bc3.png')`;
-    } else {
-      bgContainer.style.backgroundImage = `${overlay}url('/bc2.png')`;
-    }
+    if (location.pathname === '/') bgContainer.style.backgroundImage = `${overlay}url('/bc1.png')`;
+    else if (location.pathname.startsWith('/product/')) bgContainer.style.backgroundImage = `${overlay}url('/bc3.png')`;
+    else bgContainer.style.backgroundImage = `${overlay}url('/bc2.png')`;
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
@@ -36,26 +60,30 @@ export default function App() {
     <div className="app-container">
       <div className="ambient-bg" id="dynamic-bg"></div>
 
-      {/* Regarde comme c'est propre : plus aucune prop n'est passée ! */}
       <Navbar />
+      
+      {/* 2. LE FANTÔME MAGIQUE EST PLACÉ ICI */}
+      <PaymentOverlay /> 
 
       <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/rerolls" element={<Category title="SPOILS & REROLLS" subtitle="Choisis l'attribut que tu souhaites relancer." bgText="DESTINY" items={storeData.categories.rerolls} />} />
-          <Route path="/resets" element={<Category title="RÉSURRECTION" subtitle="Que souhaites-tu réinitialiser ?" bgText="REBIRTH" items={storeData.categories.resets} />} />
-          <Route path="/grades" element={<Grades />} />
-          <Route path="/product/:id" element={<SubCategory />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div key={location.pathname} /* ... (tes réglages d'animation) */ >
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/rerolls" element={<Category title="SPOILS & REROLLS" subtitle="Choisis l'attribut que tu souhaites relancer." bgText="DESTINY" items={storeData.categories.rerolls} />} />
+              <Route path="/resets" element={<Category title="RÉSURRECTION" subtitle="Que souhaites-tu réinitialiser ?" bgText="REBIRTH" items={storeData.categories.resets} />} />
+              <Route path="/grades" element={<Grades />} />
+              <Route path="/product/:id" element={<SubCategory />} />
+              {/* PLUS BESOIN DE LA ROUTE /payment-result ! */}
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <Footer />
-
-      {/* Tiroirs */}
       <CartDrawer />
       <HistoryDrawer />
 
-      {/* Modale d'Erreur */}
       {showLoginError && (
         <>
           <div className="drawer-overlay active" onClick={() => setShowLoginError(false)}></div>
