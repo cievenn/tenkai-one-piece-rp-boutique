@@ -1,1 +1,5 @@
 tenkai-store/tenkai-backend/.env
+
+# ignore any other env files
+.env
+
