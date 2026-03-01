@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion'; // <-- Import de motion ajouté ici
+import { AnimatePresence, motion } from 'framer-motion';
 
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
@@ -8,35 +8,19 @@ import HistoryDrawer from './components/HistoryDrawer';
 import Footer from './components/Footer';
 import PaymentOverlay from './components/PaymentOverlay';
 
+// 1. CORRECTION : IMPORT DES 3 PILIERS DU SITE
 import Home from './pages/Home';
-import Category from './pages/Category';
-import SubCategory from './pages/SubCategory';
-import Grades from './pages/Grades';
-import { storeData } from './data/store';
-import { useStore } from './context/StoreContext';
+import Panel from './pages/Panel';
+import Boutique from './pages/Boutique';
 
-// Les réglages de ton animation (Optimisée, fluide et snappée)
+import { useStore } from './context/StoreContext';
+import { FaExclamationTriangle } from 'react-icons/fa'; // Icône pour la belle modale d'erreur
+
+// Réglages de l'animation ultra-fluide (avec un très léger flou directionnel)
 const pageVariants = {
-  initial: { 
-    opacity: 0, 
-    y: 15 // Mouvement beaucoup plus subtil (15px au lieu de 50px)
-  },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
-      duration: 0.3, // Plus de deux fois plus rapide
-      ease: "easeOut" // Fini le rebond, la page arrive de manière nette et glissante
-    } 
-  },
-  exit: { 
-    opacity: 0, 
-    y: -15, 
-    transition: { 
-      duration: 0.2, 
-      ease: "easeIn" 
-    } 
-  }
+  initial: { opacity: 0, y: 15, filter: "blur(5px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.4, ease: "easeOut" } },
+  exit: { opacity: 0, y: -15, filter: "blur(5px)", transition: { duration: 0.2, ease: "easeIn" } }
 };
 
 export default function App() {
@@ -49,34 +33,45 @@ export default function App() {
     
     const overlay = "linear-gradient(to bottom, rgba(8, 51, 68, 0.7) 0%, rgba(3, 7, 18, 0.95) 100%), ";
     
+    // Changement de fond fluide selon le pilier visité
     if (location.pathname === '/') bgContainer.style.backgroundImage = `${overlay}url('/bc1.png')`;
-    else if (location.pathname.startsWith('/product/')) bgContainer.style.backgroundImage = `${overlay}url('/bc3.png')`;
-    else bgContainer.style.backgroundImage = `${overlay}url('/bc2.png')`;
+    else if (location.pathname === '/panel') bgContainer.style.backgroundImage = `${overlay}url('/bc2.png')`;
+    else if (location.pathname === '/boutique') bgContainer.style.backgroundImage = `${overlay}url('/bc3.png')`;
+    else bgContainer.style.backgroundImage = `${overlay}url('/bc1.png')`;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
   return (
     <div className="app-container">
-      <div className="ambient-bg" id="dynamic-bg"></div>
+      {/* Ajout d'une transition CSS sur le fond pour un effet de fondu entre les pages */}
+      <div className="ambient-bg" id="dynamic-bg" style={{ transition: 'background-image 0.8s ease-in-out' }}></div>
 
       <Navbar />
       
-      {/* 2. LE FANTÔME MAGIQUE EST PLACÉ ICI */}
+      {/* L'overlay Holographique pour les retours de paiement Stripe */}
       <PaymentOverlay /> 
 
       <main>
+        {/* AnimatePresence gère la destruction de l'ancienne page */}
         <AnimatePresence mode="wait">
-          <motion.div key={location.pathname} /* ... (tes réglages d'animation) */ >
+          
+          {/* 2. CORRECTION : Ajout des bonnes propriétés Framer Motion */}
+          <motion.div 
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            style={{ width: "100%", display: "flex", flexDirection: "column", flexGrow: 1 }}
+          >
             <Routes location={location}>
               <Route path="/" element={<Home />} />
-              <Route path="/rerolls" element={<Category title="SPOILS & REROLLS" subtitle="Choisis l'attribut que tu souhaites relancer." bgText="DESTINY" items={storeData.categories.rerolls} />} />
-              <Route path="/resets" element={<Category title="RÉSURRECTION" subtitle="Que souhaites-tu réinitialiser ?" bgText="REBIRTH" items={storeData.categories.resets} />} />
-              <Route path="/grades" element={<Grades />} />
-              <Route path="/product/:id" element={<SubCategory />} />
-              {/* PLUS BESOIN DE LA ROUTE /payment-result ! */}
+              <Route path="/panel" element={<Panel />} />
+              <Route path="/boutique" element={<Boutique />} />
             </Routes>
           </motion.div>
+          
         </AnimatePresence>
       </main>
 
@@ -84,16 +79,52 @@ export default function App() {
       <CartDrawer />
       <HistoryDrawer />
 
-      {showLoginError && (
-        <>
-          <div className="drawer-overlay active" onClick={() => setShowLoginError(false)}></div>
-          <div className="modal-error active">
-            <h3>Accès Refusé</h3>
-            <p>Veuillez vous connecter avec Steam pour lier votre compte en jeu avant d'ajouter des articles au panier.</p>
-            <button className="btn-modal-close" onClick={() => setShowLoginError(false)}>Compris</button>
-          </div>
-        </>
-      )}
+      {/* 3. DESIGN AMÉLIORÉ : Modale d'erreur en Glassmorphism (Alerte Rouge) */}
+      <AnimatePresence>
+        {showLoginError && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="drawer-overlay active" 
+              onClick={() => setShowLoginError(false)}
+              style={{ zIndex: 9998, backdropFilter: 'blur(8px)' }}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, y: 50 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="modal-error active"
+              style={{
+                position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                zIndex: 9999, background: 'rgba(11, 16, 26, 0.75)', backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 71, 87, 0.3)', borderRadius: '20px', padding: '2.5rem',
+                textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255, 71, 87, 0.05)',
+                maxWidth: '400px', width: '90%'
+              }}
+            >
+              <FaExclamationTriangle style={{ fontSize: '3rem', color: '#ff4757', marginBottom: '1rem', filter: 'drop-shadow(0 0 15px rgba(255, 71, 87, 0.4))' }} />
+              <h3 style={{ fontSize: '1.5rem', color: '#FFF', marginBottom: '1rem', fontWeight: 900, textTransform: 'uppercase' }}>Accès Refusé</h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.5' }}>
+                Veuillez vous connecter avec Steam pour lier votre compte en jeu avant d'ajouter des articles au panier.
+              </p>
+              <button 
+                onClick={() => setShowLoginError(false)}
+                style={{
+                  background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.5)', color: '#ff4757',
+                  padding: '12px 30px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', width: '100%',
+                  transition: 'all 0.3s'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#ff4757'; e.currentTarget.style.color = '#FFF'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 71, 87, 0.4)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255, 71, 87, 0.1)'; e.currentTarget.style.color = '#ff4757'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                Compris
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

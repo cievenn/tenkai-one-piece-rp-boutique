@@ -293,3 +293,9 @@ main { flex: 1 0 auto; position: relative; padding: 0 2rem 4rem; }
 .modal-error p { color: var(--text-muted); margin-bottom: 2.5rem; font-size: 1.1rem; line-height: 1.5; font-weight: 600;}
 .btn-modal-close { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.1); padding: 1rem 2.5rem; border-radius: 16px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.4s; font-size: 1rem;}
 .btn-modal-close:hover { background: #FFF; color: #000; box-shadow: 0 0 25px rgba(255,255,255,0.3); transform: translateY(-2px);}
+
+@media (max-width: 768px) {
+  .card-wrapper, .store-card, [style*="gridColumn: span"] {
+    grid-column: span 12 !important; 
+  }
+}
