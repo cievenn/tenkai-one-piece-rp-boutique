@@ -10,7 +10,7 @@ import PaymentOverlay from './components/PaymentOverlay';
 
 // 1. CORRECTION : IMPORT DES 3 PILIERS DU SITE
 import Home from './pages/Home';
-import Panel from './pages/Panel';
+import Panel from './pages/Panel/Panel';
 import Boutique from './pages/Boutique';
 
 import { useStore } from './context/StoreContext';
@@ -47,7 +47,8 @@ export default function App() {
       {/* Ajout d'une transition CSS sur le fond pour un effet de fondu entre les pages */}
       <div className="ambient-bg" id="dynamic-bg" style={{ transition: 'background-image 0.8s ease-in-out' }}></div>
 
-      <Navbar />
+      {/* 💥 CONDITION ICI : La Navbar s'affiche partout SAUF sur /panel */}
+      {location.pathname !== '/panel' && <Navbar />}
       
       {/* L'overlay Holographique pour les retours de paiement Stripe */}
       <PaymentOverlay /> 
