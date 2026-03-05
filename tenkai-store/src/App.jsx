@@ -28,6 +28,11 @@ export default function App() {
   const { showLoginError, setShowLoginError } = useStore();
 
   useEffect(() => {
+    // 1. Désactiver la restauration automatique du scroll du navigateur
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
     const bgContainer = document.getElementById('dynamic-bg');
     if (!bgContainer) return;
     
@@ -39,7 +44,8 @@ export default function App() {
     else if (location.pathname === '/boutique') bgContainer.style.backgroundImage = `${overlay}url('/bc3.png')`;
     else bgContainer.style.backgroundImage = `${overlay}url('/bc1.png')`;
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 2. Forcer le retour en haut ET STRICTEMENT À GAUCHE de manière instantanée
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
   return (

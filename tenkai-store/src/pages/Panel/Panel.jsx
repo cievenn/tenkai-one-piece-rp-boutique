@@ -17,6 +17,11 @@ import LoreView from './views/LoreView';
 import SettingsView from './views/SettingsView';
 
 export default function Panel() {
+  // 🔒 LA CORRECTION DU CRASH EST ICI : 
+  // Les hooks (useStore) DOIVENT être en haut, hors de tout "if" ou "try/catch".
+  const store = useStore();
+  const steamUser = store?.user || null;
+
   const [activeView, setActiveView] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -31,16 +36,6 @@ export default function Panel() {
   }, []);
 
   // --- DONNÉES UTILISATEUR ---
-  let steamUser = null;
-  try {
-    if (typeof useStore === 'function') {
-      const store = useStore();
-      steamUser = store?.user || store?.currentUser || null;
-    }
-  } catch (error) {
-    console.warn("Contexte Steam en attente de liaison.");
-  }
-
   const [currentUser, setCurrentUser] = useState({
     pseudo: steamUser?.name || "Pirate_99",
     role: "Capitaine",
@@ -91,10 +86,13 @@ export default function Panel() {
           setIsTicketModalOpen={setIsTicketModalOpen} setIsDiscordModalOpen={setIsDiscordModalOpen} 
         />
 
-        <main className="tk-liquid-glass tk-center-hub">
-          <TopBar activeView={activeView} searchQuery={searchQuery} setSearchQuery={setSearchQuery} announcements={announcements} />
+        {/* HUB CENTRAL : Padding à 0 et overflow hidden pour écraser et arrondir la TopBar */}
+        <main className="tk-liquid-glass tk-center-hub" style={{ height: '100%', borderRadius: '16px', overflow: 'hidden', padding: '0px', display: 'flex', flexDirection: 'column' }}>
+          
+          <TopBar activeView={activeView} setActiveView={setActiveView} searchQuery={searchQuery} setSearchQuery={setSearchQuery} announcements={announcements} />
 
-          <div style={{ flex: 1, position: 'relative' }}>
+          {/* ZONE DE VUES : Padding réintroduit ici pour que le Dashboard ne touche pas les bords */}
+          <div style={{ flex: 1, position: 'relative', padding: '1rem', boxSizing: 'border-box' }}>
             <AnimatePresence mode="wait">
               {activeView === 'home' && <DashboardView key="home" variants={fadeVariants} announcements={announcements} serverPlayersCount={serverPlayers.length} />}
               {activeView === 'profile' && <ProfileView key="profile" variants={fadeVariants} currentUser={currentUser} setCurrentUser={setCurrentUser} />}

@@ -90,12 +90,12 @@ export default function Home() {
   }
 
   return (
-    // Note : overflowX a été retiré ici pour libérer totalement la 3D
+    // 1. ON RETIRE overflowX: 'hidden' ICI pour laisser la 3D sortir de la zone de texte
     <div style={{ position: 'relative', width: '100%' }}>
       
-      {/* ARRIÈRE-PLAN GLOBAL */}
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-50%', left: '-25%', width: '150vw', height: '150vw', background: 'radial-gradient(circle closest-side, rgba(0, 229, 255, 0.05) 0%, rgba(0, 229, 255, 0) 100%)' }} />
+      {/* 2. ON REMET EN 'fixed' avec 100% (pour que le fond d'écran ne soit pas bloqué par les marges) */}
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-50%', left: '-25%', width: '150%', height: '150%', background: 'radial-gradient(circle closest-side, rgba(0, 229, 255, 0.05) 0%, rgba(0, 229, 255, 0) 100%)' }} />
         <Particles />
       </div>
 

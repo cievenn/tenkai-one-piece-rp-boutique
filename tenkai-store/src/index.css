@@ -1,4 +1,3 @@
-/* --- VARIABLES GLOBALES --- */
 :root {
   --bg-deep: #030712;
   --steam-blue: #1b2838;
@@ -9,16 +8,37 @@
   --cyan-neon: #00E5FF; 
 }
 
+/* 1. RETRAIT DU OVERFLOW ICI POUR ÉVITER LA DOUBLE BARRE */
+html, body { 
+  width: 100%; 
+  margin: 0; 
+  padding: 0; 
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
 body {
   background-color: var(--bg-deep); 
   color: var(--text-main);
-  overflow-x: hidden; 
   min-height: 100vh; 
-  display: flex; 
-  flex-direction: column;
 }
+
+#root {
+  width: 100%;
+  overflow-x: hidden; 
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  flex: 1;
+}
+
 
 /* ================= CUSTOM SCROLLBAR GLOBALE (Améliorée) ================= */
 * {
@@ -41,7 +61,7 @@ body {
 
 /* --- BACKGROUND DYNAMIQUE --- */
 .ambient-bg {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; /* <-- Modifié ici */
   background-size: cover; background-position: center; background-attachment: fixed;
   z-index: -1; transition: background-image 0.8s ease-in-out;
 }

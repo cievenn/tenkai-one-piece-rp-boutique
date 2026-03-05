@@ -10,8 +10,15 @@ export default function SidebarRight({ searchQuery, serverPlayers }) {
   const filteredPlayers = serverPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <aside className="tk-liquid-glass tk-sidebar-nav" style={{ width: '100px' }}>
-      <div className="tk-scroll-zone" style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center', overflow: 'visible' }}>
+    <aside className="tk-sidebar-nav tk-premium-sidebar" style={{ height: '100%', padding: '1.5rem 0', width: '90px' }}>
+      
+      {/* --- INJECTION DE LA DA "PREMIUM" (Fonds masqués) --- */}
+      <div className="tk-premium-sidebar-inner">
+        <div className="tk-sidebar-tech-grid" />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top, rgba(0,229,255,0.05), transparent 50%)' }} />
+      </div>
+
+      <div className="tk-scroll-zone" style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center', overflow: 'visible', zIndex: 2 }}>
         
         <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>ALLIÉS</div>
         
@@ -26,7 +33,8 @@ export default function SidebarRight({ searchQuery, serverPlayers }) {
           </div>
         ))}
 
-        <div style={{ width: '35px', height: '1px', background: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
+        {/* Séparateur lissé */}
+        <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '20px 0' }} />
         
         <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>GLOBAL</div>
         
