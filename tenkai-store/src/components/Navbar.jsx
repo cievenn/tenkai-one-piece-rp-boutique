@@ -32,7 +32,7 @@ export default function Navbar() {
             <div className="user-info">
               <img src={user?.avatar || "https://i.pravatar.cc/150?img=11"} alt="Avatar" />
               <div className="user-text">
-                <span className="user-name">{user?.name || "Pirate"}</span>
+                <span className="user-name">{user?.username || user?.name || "Pirate"}</span>
                 <span style={{fontSize: '0.7rem', color: '#00E5FF', fontWeight: 'bold'}}>Connecté</span>
               </div>
             </div>

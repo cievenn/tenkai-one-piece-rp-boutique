@@ -4,91 +4,151 @@ const session = require('express-session');
 const passport = require('passport');
 const SteamStrategy = require('passport-steam').Strategy;
 const cors = require('cors');
-// 1. IMPORT DE STRIPE
+const helmet = require('helmet');
+const path = require('path');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+const { db, findOrCreateUser, SQLiteSessionStore } = require('./database/init');
+const { verifyCsrf } = require('./middleware/auth');
+const { globalLimiter } = require('./middleware/security');
+
+const authRoutes = require('./routes/auth');
+const ticketRoutes = require('./routes/tickets');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
-app.use(cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false
 }));
 
-// 2. PERMET AU SERVEUR DE LIRE LE FORMAT JSON (Le panier)
-app.use(express.json());
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token']
+}));
 
+app.use(globalLimiter);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '7d',
+  setHeaders: (res) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+  }
+}));
+
+const sessionStore = new SQLiteSessionStore();
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7
-    }
+  store: sessionStore,
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  name: 'tenkai.sid',
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+passport.serializeUser((user, done) => done(null, user.id));
+
+passport.deserializeUser((id, done) => {
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    done(null, user || null);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
 
 passport.use(new SteamStrategy({
-    returnURL: 'http://localhost:3000/auth/steam/return',
-    realm: 'http://localhost:3000/',
+    returnURL: `${BACKEND_URL}/auth/steam/return`,
+    realm: BACKEND_URL + '/',
     apiKey: process.env.STEAM_API_KEY
   },
   function(identifier, profile, done) {
-    return done(null, profile);
+    try {
+      const steamId = profile.id;
+      const username = profile.displayName;
+      const avatar = profile.photos?.[2]?.value || profile.photos?.[0]?.value || '';
+      const user = findOrCreateUser(steamId, username, avatar);
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
+    }
   }
 ));
 
-// --- ROUTES STEAM --- (Garde celles que tu as déjà)
-app.get('/auth/steam', passport.authenticate('steam', { failureRedirect: '/' }));
-app.get('/auth/steam/return', passport.authenticate('steam', { failureRedirect: process.env.CLIENT_URL }), (req, res) => { res.redirect(process.env.CLIENT_URL); });
-app.get('/auth/session', (req, res) => {
-    if (req.isAuthenticated()) res.json({ authenticated: true, user: { steamId: req.user.id, name: req.user.displayName, avatar: req.user.photos[2].value }});
-    else res.status(401).json({ authenticated: false });
-});
-app.get('/auth/logout', (req, res) => { req.logout((err) => { res.redirect(process.env.CLIENT_URL); }); });
+app.use('/auth', authRoutes);
+app.use('/api/tickets', verifyCsrf, ticketRoutes);
+app.use('/api/users', verifyCsrf, userRoutes);
 
-// --- NOUVELLE ROUTE : STRIPE CHECKOUT ---
-app.post('/api/create-checkout-session', async (req, res) => {
-    try {
-        const { cart } = req.body;
+app.post('/api/create-checkout-session', verifyCsrf, async (req, res) => {
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Authentification requise.' });
+  }
 
-        // 1. On transforme ton panier React en panier compréhensible par Stripe
-        const lineItems = cart.map((item) => ({
-            price_data: {
-                currency: 'eur',
-                product_data: {
-                    name: item.name || item.title,
-                },
-                // Stripe gère les prix en centimes (5.00€ devient 500)
-                unit_amount: Math.round(item.price * 100), 
-            },
-            quantity: 1,
-        }));
-
-        // 2. On demande à Stripe de créer une session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'paypal'], // Tu pourras rajouter d'autres moyens de paiement depuis ton dashboard Stripe
-            line_items: lineItems,
-            mode: 'payment',
-            // URLs de retour après le paiement
-            success_url: `${process.env.CLIENT_URL}/?payment=success`,
-            cancel_url: `${process.env.CLIENT_URL}/?payment=cancel`,
-        });
-
-        // 3. On renvoie l'URL sécurisée au Frontend
-        res.json({ url: session.url });
-    } catch (error) {
-        console.error("Erreur Stripe:", error);
-        res.status(500).json({ error: error.message });
+  try {
+    const { cart } = req.body;
+    if (!Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ error: 'Panier vide.' });
     }
+
+    const lineItems = cart.map((item) => ({
+      price_data: {
+        currency: 'eur',
+        product_data: { name: String(item.name || item.title).substring(0, 200) },
+        unit_amount: Math.round(Number(item.price) * 100),
+      },
+      quantity: 1,
+    }));
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ['card', 'paypal'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/?payment=success`,
+      cancel_url: `${process.env.CLIENT_URL}/?payment=cancel`,
+      metadata: { steamId: req.user.steam_id }
+    });
+
+    res.json({ url: checkoutSession.url });
+  } catch (error) {
+    console.error("Erreur Stripe:", error);
+    res.status(500).json({ error: 'Erreur lors de la création du paiement.' });
+  }
 });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Serveur Tenkai démarré sur le port ${process.env.PORT} 🏴‍☠️`);
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'Fichier trop volumineux (max 5 Mo).' });
+  }
+  if (err.message?.includes('Format non autorisé')) {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Erreur interne du serveur.' });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Serveur Tenkai démarré sur le port ${PORT}`);
+  console.log(`Client URL: ${process.env.CLIENT_URL}`);
+});
+
+process.on('SIGINT', () => {
+  sessionStore.close();
+  db.close();
+  process.exit(0);
 });

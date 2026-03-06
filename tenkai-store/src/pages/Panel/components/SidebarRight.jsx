@@ -1,18 +1,11 @@
-import { useState } from 'react';
+import { useStore } from '../../../context/StoreContext';
 
-export default function SidebarRight({ searchQuery, serverPlayers }) {
-  const [friends] = useState([
-    { id: 1, name: "Zoro_77", status: "online", role: "Second" },
-    { id: 2, name: "NamiSwann", status: "afk", role: "Navigatrice" }
-  ]);
-
-  const filteredFriends = friends.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredPlayers = serverPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+export default function SidebarRight({ searchQuery }) {
+  const { user } = useStore();
 
   return (
     <aside className="tk-sidebar-nav tk-premium-sidebar" style={{ height: '100%', padding: '1.5rem 0', width: '90px' }}>
       
-      {/* --- INJECTION DE LA DA "PREMIUM" (Fonds masqués) --- */}
       <div className="tk-premium-sidebar-inner">
         <div className="tk-sidebar-tech-grid" />
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top, rgba(0,229,255,0.05), transparent 50%)' }} />
@@ -20,34 +13,26 @@ export default function SidebarRight({ searchQuery, serverPlayers }) {
 
       <div className="tk-scroll-zone" style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center', overflow: 'visible', zIndex: 2 }}>
         
-        <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>ALLIÉS</div>
+        <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>MOI</div>
         
-        {filteredFriends.map(f => (
-          <div key={f.id} className="tk-player-avatar">
-            <img src={`https://i.pravatar.cc/150?u=${f.name}`} alt={f.name} />
-            <div className={`tk-status-dot ${f.status === 'online' ? 'online' : ''}`} style={{ background: f.status === 'online' ? '#00e676' : '#FFD700' }} />
+        {user && (
+          <div className="tk-player-avatar">
+            <img src={user.avatarCustom || user.avatar} alt={user.username} style={{ borderRadius: '12px' }} />
+            <div className="tk-status-dot online" />
             <div className="tk-player-tooltip">
-              <div className="tk-tech-font" style={{ color: '#FFF', fontSize: '1.2rem' }}>{f.name}</div>
-              <div className="tk-tech-font" style={{ color: '#00E5FF', fontSize: '0.9rem', marginTop: '5px' }}>{f.role}</div>
+              <div className="tk-tech-font" style={{ color: '#FFF', fontSize: '1.2rem' }}>{user.username}</div>
+              <div className="tk-tech-font" style={{ color: '#00E5FF', fontSize: '0.9rem', marginTop: '5px' }}>{user.role}</div>
             </div>
           </div>
-        ))}
+        )}
 
-        {/* Séparateur lissé */}
         <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '20px 0' }} />
         
-        <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>GLOBAL</div>
+        <div className="tk-tech-font" style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginBottom: '25px', letterSpacing: '2px', textAlign: 'center' }}>INFOS</div>
         
-        {filteredPlayers.map(p => (
-          <div key={p.id} className="tk-player-avatar" style={{ filter: p.status !== 'online' ? 'grayscale(100%) opacity(50%)' : 'none' }}>
-            <img src={`https://i.pravatar.cc/150?u=${p.name}`} alt={p.name} />
-            <div className={`tk-status-dot ${p.status === 'online' ? 'online' : ''}`} style={{ background: p.status === 'online' ? '#00e676' : p.status === 'afk' ? '#FFD700' : '#DC143C' }} />
-            <div className="tk-player-tooltip">
-              <div className="tk-tech-font" style={{ color: '#FFF', fontSize: '1.2rem' }}>{p.name}</div>
-              <div className="tk-tech-font" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '5px' }}>{p.status}</div>
-            </div>
-          </div>
-        ))}
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.65rem', padding: '0 8px', fontFamily: 'Orbitron, sans-serif', letterSpacing: '1px' }}>
+          v1.0
+        </div>
       </div>
     </aside>
   );

@@ -1,10 +1,9 @@
 import { FaServer, FaTicketAlt, FaBook, FaCog, FaPlus, FaGavel, FaUserAlt } from 'react-icons/fa';
 
-export default function SidebarLeft({ activeView, setActiveView, setIsTicketModalOpen }) {
+export default function SidebarLeft({ activeView, setActiveView, setIsTicketModalOpen, ticketCount = 0, navigateToProfile, userSteamId }) {
   return (
     <nav 
       className="tk-sidebar-nav tk-premium-sidebar" 
-      /* Ajout de boxSizing: 'border-box' et width: '90px' pour l'alignement parfait */
       style={{ height: '100%', padding: '1.5rem 0', width: '90px', boxSizing: 'border-box', margin: '0'}}>
       
       <style dangerouslySetInnerHTML={{__html: `
@@ -55,6 +54,10 @@ export default function SidebarLeft({ activeView, setActiveView, setIsTicketModa
           <FaServer /><div className="tk-nav-tooltip tk-tech-font">Dashboard</div>
         </div>
         
+        <div className={`tk-nav-item ${activeView === 'profile' ? 'active' : ''}`} onClick={() => { if (navigateToProfile && userSteamId) navigateToProfile(userSteamId); }}>
+          <FaUserAlt /><div className="tk-nav-tooltip tk-tech-font">Mon Profil</div>
+        </div>
+
         <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '15px 0', flexShrink: 0 }} />
         
         <div className="tk-nav-item" style={{ color: '#00E5FF', background: 'rgba(0, 229, 255, 0.05)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '12px' }} onClick={() => setIsTicketModalOpen(true)}>
@@ -62,7 +65,9 @@ export default function SidebarLeft({ activeView, setActiveView, setIsTicketModa
         </div>
         
         <div className={`tk-nav-item ${activeView === 'tickets' ? 'active' : ''}`} onClick={() => setActiveView('tickets')}>
-          <FaTicketAlt /><div className="tk-nav-badge">1</div><div className="tk-nav-tooltip tk-tech-font">Mes Tickets</div>
+          <FaTicketAlt />
+          {ticketCount > 0 && <div className="tk-nav-badge">{ticketCount}</div>}
+          <div className="tk-nav-tooltip tk-tech-font">Mes Tickets</div>
         </div>
 
         <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '15px 0', flexShrink: 0 }} />
@@ -75,7 +80,8 @@ export default function SidebarLeft({ activeView, setActiveView, setIsTicketModa
           <FaBook /><div className="tk-nav-tooltip tk-tech-font">Archives Lore</div>
         </div>
       </div>
-        <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '15px 0', flexShrink: 0 }} />
+
+      <div style={{ width: '35px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', margin: '15px 0', flexShrink: 0 }} />
 
       <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', gap: '15px', marginTop: 'auto', zIndex: 2 }}>
         <div className={`tk-nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
