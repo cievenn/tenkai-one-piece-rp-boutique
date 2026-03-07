@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaCircle, FaServer, FaShoppingCart, 
@@ -7,8 +7,26 @@ import {
   FaTimes, FaCrown,
   FaGlobe, FaCrosshairs, FaAnchor, FaMapMarkedAlt, FaWind
 } from 'react-icons/fa';
+import { useStore } from '../../../context/StoreContext';
 
 export default function DashboardView({ announcements = [], serverPlayersCount = 0 }) {
+  const { apiFetch } = useStore();
+  const [recentTickets, setRecentTickets] = useState([]);
+
+  const loadRecentTickets = useCallback(async () => {
+    try {
+      const res = await apiFetch('/api/tickets/recent');
+      if (res.ok) { const d = await res.json(); setRecentTickets(d.tickets || []); }
+    } catch {}
+  }, [apiFetch]);
+
+  useEffect(() => { loadRecentTickets(); }, [loadRecentTickets]);
+
+  const mushiItems = recentTickets.length > 0
+    ? recentTickets.slice(0, 4).map(t => ({ id: t.ticket_uid, type: t.category?.includes('Candidature') ? 'RP' : t.category?.includes('Plainte') ? 'STAFF' : 'SYSTEM', title: `[${t.ticket_uid}] ${t.category}`, desc: t.title }))
+    : announcements.length > 0
+    ? announcements
+    : [{ id: 'empty', type: 'SYSTEM', title: 'RÉSEAU OPÉRATIONNEL', desc: 'Aucune transmission récente. Le réseau est calme.' }];
   
   const [openModal, setOpenModal] = useState(null);
 
@@ -338,7 +356,7 @@ export default function DashboardView({ announcements = [], serverPlayersCount =
             </div>
             
             <div className="tk-no-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', zIndex: 10, flex: 1, overflowY: 'auto', paddingRight: '5px', paddingLeft: '5px' }}>
-              {announcements.slice(0, 4).map((ann, idx) => {
+              {mushiItems.slice(0, 4).map((ann, idx) => {
                 const typeColor = ann.type === 'RP' ? '#c471ed' : ann.type === 'STAFF' ? 'var(--cyan-neon)' : '#00e676';
                 return (
                   <div key={ann.id} onClick={() => window.location.href='#'} className="tk-data-row" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer' }}>

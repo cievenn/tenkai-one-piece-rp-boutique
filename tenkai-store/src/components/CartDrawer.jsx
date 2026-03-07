@@ -1,9 +1,36 @@
+import { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaShoppingCart, FaTrash, FaGhost, FaBolt } from 'react-icons/fa';
+import { FaShoppingCart, FaTrash, FaGhost, FaBolt, FaFlask } from 'react-icons/fa';
+
+const API_BASE = 'http://localhost:3000';
 
 export default function CartDrawer() {
-  const { isCartOpen, setIsCartOpen, cart, cartTotal, removeFromCart, checkout } = useStore();
+  const { isCartOpen, setIsCartOpen, cart, cartTotal, removeFromCart, checkout, apiFetch, processSuccessfulPayment } = useStore();
+  const [mockEnabled, setMockEnabled] = useState(false);
+
+  useEffect(() => {
+    const base = API_BASE || 'http://localhost:3000';
+    fetch(`${base}/api/dev/mock-enabled`, { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : { enabled: false })
+      .then((d) => setMockEnabled(d?.enabled === true))
+      .catch(() => setMockEnabled(false));
+  }, []);
+
+  const handleSimulatePurchase = async () => {
+    if (cart.length === 0) return;
+    try {
+      const res = await apiFetch('/api/dev/simulate-purchase', { method: 'POST', body: JSON.stringify({ cart }) });
+      const data = await res.json();
+      if (data.success) {
+        if (typeof processSuccessfulPayment === 'function') processSuccessfulPayment();
+        setIsCartOpen(false);
+      } else alert(data.error || 'Erreur');
+    } catch (e) {
+      console.error(e);
+      alert('Erreur lors de la simulation.');
+    }
+  };
 
   return (
     <>
@@ -161,6 +188,23 @@ export default function CartDrawer() {
             </span>
           </div>
 
+          {mockEnabled && (
+            <button
+              onClick={handleSimulatePurchase}
+              disabled={cart.length === 0}
+              style={{
+                width: '100%', padding: '0.9rem', borderRadius: '12px', marginBottom: '0.8rem',
+                background: cart.length === 0 ? 'rgba(255,255,255,0.05)' : 'rgba(168, 85, 247, 0.2)',
+                color: cart.length === 0 ? '#666' : '#a855f7',
+                fontWeight: '700', fontSize: '0.9rem', border: '1px solid rgba(168, 85, 247, 0.4)',
+                cursor: cart.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FaFlask /> Simuler achat (sans paiement)
+            </button>
+          )}
           <button 
             onClick={checkout}
             disabled={cart.length === 0}

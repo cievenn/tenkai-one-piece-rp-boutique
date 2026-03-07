@@ -107,6 +107,38 @@ nav {
 .btn-steam:hover { background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%); border-color: #66c0f4; box-shadow: 0 8px 25px rgba(102, 192, 244, 0.4); transform: translateY(-2px); }
 .btn-steam:hover svg { fill: #FFF; }
 
+/* --- BOUTON DISCORD PREMIUM (Blurple #5865F2) --- */
+.btn-discord {
+  background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+  color: #FFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.7rem 1.5rem;
+  border-radius: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn-discord:hover {
+  background: linear-gradient(135deg, #6b76f5 0%, #5865F2 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+.btn-discord:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(88, 101, 242, 0.3);
+}
+.btn-discord svg { flex-shrink: 0; transition: transform 0.3s; }
+.btn-discord:hover svg { transform: scale(1.08); }
+
 .user-profile { display: none; align-items: center; gap: 1.5rem; background: rgba(0,0,0,0.3); padding: 0.4rem 1rem 0.4rem 0.4rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
 .user-profile.active { display: flex; animation: slideInRight 0.4s ease forwards; }
 @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }

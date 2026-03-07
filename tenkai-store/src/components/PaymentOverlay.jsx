@@ -118,7 +118,7 @@ export default function PaymentOverlay() {
                   </div>
 
                   <h2 style={{ color: '#FFF', fontSize: '1.4rem', marginBottom: '0.5rem', fontWeight: 600 }}>
-                    Félicitations, <span style={{ color: themeColor, fontWeight: 900 }}>{user?.name || "Pirate"}</span> !
+                    Félicitations, <span style={{ color: themeColor, fontWeight: 900 }}>{user?.displayName || user?.discordUsername || "Pirate"}</span> !
                   </h2>
                   <motion.h1 
                     initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6, delay: 0.1 }}
